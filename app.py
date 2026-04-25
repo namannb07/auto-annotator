@@ -15,7 +15,7 @@ from typing import List, Dict, Optional, Tuple
 
 import streamlit as st
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 from huggingface_hub import hf_hub_download
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -79,6 +79,9 @@ _init_state()
 @st.cache_resource(show_spinner=False)
 def load_model(filename: str):
     """Download from HuggingFace and load with Ultralytics."""
+    import os
+    # Tell ultralytics to avoid cv2 display calls
+    os.environ["YOLO_VERBOSE"] = "False"
     from ultralytics import YOLO
     path = hf_hub_download(
         repo_id="Ultralytics/YOLOv8",
@@ -94,8 +97,10 @@ def run_inference(pil_img: Image.Image, conf: float) -> List[dict]:
     model = st.session_state.model
     if model is None:
         return []
+    # Convert PIL → RGB numpy array (no cv2 needed)
+    img_array = np.array(pil_img.convert("RGB"))
     results = model.predict(
-        source=np.array(pil_img.convert("RGB")),
+        source=img_array,
         conf=conf,
         device="cpu",
         verbose=False,
