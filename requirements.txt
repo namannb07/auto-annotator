@@ -4,3 +4,5 @@ huggingface-hub>=0.23.0
 Pillow>=10.0.0
 numpy>=1.24.0
 opencv-python-headless>=4.9.0
+# NOTE: do NOT add opencv-python here — it requires libGL which is absent on Streamlit Cloud
+#       ultralytics will use opencv-python-headless automatically
